@@ -11,7 +11,10 @@ class IMCApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Calculadora de IMC',
-      theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        useMaterial3: true,
+      ),
       home: const IMCCalculator(),
     );
   }
@@ -31,39 +34,55 @@ class _IMCCalculatorState extends State<IMCCalculator> {
   String _mensagem = '';
 
   void _calcularIMC() {
-    final double? altura = double.tryParse(
-      _alturaController.text.replaceAll(',', '.'),
-    );
-    final double? peso = double.tryParse(
-      _pesoController.text.replaceAll(',', '.'),
-    );
+    final double? altura = double.tryParse(_alturaController.text.replaceAll(',', '.'));
+    final double? peso = double.tryParse(_pesoController.text.replaceAll(',', '.'));
 
     if (altura == null || peso == null || altura <= 0 || peso <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Por favor, insira valores válidos.'),
-          backgroundColor: Colors.redAccent,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      setState(() {
+        _mensagem = 'Por favor, insira valores válidos.';
+        _imc = null;
+      });
       return;
     }
 
     final imc = peso / (altura * altura);
+    String classificacao;
+    Color cor;
+
+    if (imc < 18.5) {
+      classificacao = 'Abaixo do peso';
+      cor = Colors.blue;
+    } else if (imc < 25) {
+      classificacao = 'Peso ideal';
+      cor = Colors.green;
+    } else if (imc < 30) {
+      classificacao = 'Sobrepeso';
+      cor = Colors.orange;
+    } else if (imc < 35) {
+      classificacao = 'Obesidade grau I';
+      cor = Colors.deepOrange;
+    } else if (imc < 40) {
+      classificacao = 'Obesidade grau II';
+      cor = Colors.red;
+    } else {
+      classificacao = 'Obesidade grau III';
+      cor = Colors.red.shade900;
+    }
 
     setState(() {
       _imc = imc;
-      if (imc < 18.5) {
-        _mensagem = 'Abaixo do peso';
-      } else if (imc < 24.9) {
-        _mensagem = 'Peso normal';
-      } else if (imc < 29.9) {
-        _mensagem = 'Sobrepeso';
-      } else {
-        _mensagem = 'Obesidade';
-      }
+      _mensagem = classificacao;
     });
   }
+    void _limparCampos() {
+    _pesoController.clear();
+    _alturaController.clear();
+    setState(() {
+      _imc = null;
+      _mensagem = '';
+    });
+  }
+  
 
   @override
   Widget build(BuildContext context) {
@@ -94,32 +113,33 @@ class _IMCCalculatorState extends State<IMCCalculator> {
                 border: OutlineInputBorder(),
               ),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 20),
             ElevatedButton(
               onPressed: _calcularIMC,
+              child: Text('Calcular IMC'),
+            ),
+            SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: _limparCampos,
               style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 50),
+                backgroundColor: Colors.grey,
               ),
-              child: const Text('Calcular IMC'),
+              child: Text('Limpar Campos'),
             ),
             const SizedBox(height: 32),
-            if (_mensagem.isNotEmpty)
+            if (_imc != null)
               Column(
                 children: [
-                  if (_imc != null)
-                    Text(
-                      'Seu IMC é: ${_imc!.toStringAsFixed(2)}',
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                  Text(
+                    'Seu IMC é: ${_imc!.toStringAsFixed(2)}',
+                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  ),
                   const SizedBox(height: 8),
                   Text(
                     _mensagem,
                     style: TextStyle(
                       fontSize: 20,
-                      color: _imc == null ? Colors.orange : _getColor(_imc!),
+                      color: _getColor(_imc!),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
