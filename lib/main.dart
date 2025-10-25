@@ -11,10 +11,7 @@ class IMCApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Calculadora de IMC',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        useMaterial3: true,
-      ),
+      theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
       home: const IMCCalculator(),
     );
   }
@@ -34,14 +31,21 @@ class _IMCCalculatorState extends State<IMCCalculator> {
   String _mensagem = '';
 
   void _calcularIMC() {
-    final double? altura = double.tryParse(_alturaController.text.replaceAll(',', '.'));
-    final double? peso = double.tryParse(_pesoController.text.replaceAll(',', '.'));
+    final double? altura = double.tryParse(
+      _alturaController.text.replaceAll(',', '.'),
+    );
+    final double? peso = double.tryParse(
+      _pesoController.text.replaceAll(',', '.'),
+    );
 
     if (altura == null || peso == null || altura <= 0 || peso <= 0) {
-      setState(() {
-        _mensagem = 'Por favor, insira valores válidos.';
-        _imc = null;
-      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Por favor, insira valores válidos.'),
+          backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
       return;
     }
 
@@ -99,19 +103,23 @@ class _IMCCalculatorState extends State<IMCCalculator> {
               child: const Text('Calcular IMC'),
             ),
             const SizedBox(height: 32),
-            if (_imc != null)
+            if (_mensagem.isNotEmpty)
               Column(
                 children: [
-                  Text(
-                    'Seu IMC é: ${_imc!.toStringAsFixed(2)}',
-                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                  ),
+                  if (_imc != null)
+                    Text(
+                      'Seu IMC é: ${_imc!.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   const SizedBox(height: 8),
                   Text(
                     _mensagem,
                     style: TextStyle(
                       fontSize: 20,
-                      color: _getColor(_imc!),
+                      color: _imc == null ? Colors.orange : _getColor(_imc!),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
