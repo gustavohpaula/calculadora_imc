@@ -11,10 +11,7 @@ class IMCApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Calculadora de IMC',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        useMaterial3: true,
-      ),
+      theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
       home: const IMCCalculator(),
     );
   }
@@ -32,15 +29,21 @@ class _IMCCalculatorState extends State<IMCCalculator> {
   final _pesoController = TextEditingController();
   double? _imc;
   String _mensagem = '';
+  Color _corResultado = Colors.black;
 
   void _calcularIMC() {
-    final double? altura = double.tryParse(_alturaController.text.replaceAll(',', '.'));
-    final double? peso = double.tryParse(_pesoController.text.replaceAll(',', '.'));
+    final double? altura = double.tryParse(
+      _alturaController.text.replaceAll(',', '.'),
+    );
+    final double? peso = double.tryParse(
+      _pesoController.text.replaceAll(',', '.'),
+    );
 
     if (altura == null || peso == null || altura <= 0 || peso <= 0) {
       setState(() {
         _mensagem = 'Por favor, insira valores válidos.';
         _imc = null;
+        _corResultado = Colors.red;
       });
       return;
     }
@@ -72,17 +75,19 @@ class _IMCCalculatorState extends State<IMCCalculator> {
     setState(() {
       _imc = imc;
       _mensagem = classificacao;
+      _corResultado = cor;
     });
   }
-    void _limparCampos() {
+
+  void _limparCampos() {
     _pesoController.clear();
     _alturaController.clear();
     setState(() {
       _imc = null;
       _mensagem = '';
+      _corResultado = Colors.black;
     });
   }
-  
 
   @override
   Widget build(BuildContext context) {
@@ -121,9 +126,7 @@ class _IMCCalculatorState extends State<IMCCalculator> {
             SizedBox(height: 10),
             ElevatedButton(
               onPressed: _limparCampos,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.grey,
-              ),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
               child: Text('Limpar Campos'),
             ),
             const SizedBox(height: 32),
@@ -132,16 +135,26 @@ class _IMCCalculatorState extends State<IMCCalculator> {
                 children: [
                   Text(
                     'Seu IMC é: ${_imc!.toStringAsFixed(2)}',
-                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    _mensagem,
-                    style: TextStyle(
-                      fontSize: 20,
-                      color: _getColor(_imc!),
-                      fontWeight: FontWeight.w500,
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
                     ),
+                  ),
+                  SizedBox(height: 10),
+                  Container(
+                    padding: EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: _corResultado.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      _mensagem!,
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: _corResultado,
+                    ),
+                  ),
                   ),
                 ],
               ),
@@ -149,12 +162,5 @@ class _IMCCalculatorState extends State<IMCCalculator> {
         ),
       ),
     );
-  }
-
-  Color _getColor(double imc) {
-    if (imc < 18.5) return Colors.orange;
-    if (imc < 24.9) return Colors.green;
-    if (imc < 29.9) return Colors.yellow.shade700;
-    return Colors.red;
   }
 }
